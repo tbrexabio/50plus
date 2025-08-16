@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* App-wide tweaks */
+:root {
+  color-scheme: light;
+}
+body {
+  @apply bg-gray-50 text-gray-900;
+}
+
+.prose ul { margin-top: 0; }
