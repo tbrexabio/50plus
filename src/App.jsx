@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
-import AuthPanel from './components/AuthPanel'
-import { isSupabaseConfigured } from './lib/supabaseClient'
+import React, { useState } from 'react';
+import AuthPanel from './components/AuthPanel.jsx';
+import CommunityFeed from './components/CommunityFeed.jsx';
+import { isSupabaseConfigured } from './lib/supabaseClient';
 
 export default function App() {
-  const [session, setSession] = useState(null)
+  const [session, setSession] = useState(null);
 
   return (
     <div style={{minHeight:'100vh', background:'linear-gradient(180deg,#eef2ff,#ffffff)', padding:'2rem'}}>
@@ -19,31 +20,33 @@ export default function App() {
       </header>
 
       <main style={{maxWidth:960, margin:'1.5rem auto', display:'grid', gap:16}}>
-        <section>
-          <div style={{background:'#fff', border:'1px solid #e5e7eb', borderRadius:16, padding:16}}>
-            <h2 style={{marginTop:0, color:'#2563eb'}}>Welcome</h2>
-            <p>Sign in below to unlock community posting and cloud saves. We use passwordless email magic links.</p>
-            {!isSupabaseConfigured && (
-              <p style={{color:'#b91c1c', fontWeight:600}}>Environment variables missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.</p>
-            )}
-          </div>
-        </section>
-
-        <section>
-          <AuthPanel onSession={setSession} />
-        </section>
-
-        {session && (
-          <section>
-            <div style={{background:'#fff', border:'1px solid #e5e7eb', borderRadius:16, padding:16}}>
-              <h3 style={{marginTop:0}}>You’re logged in</h3>
-              <p style={{marginBottom:8, color:'#64748b'}}>Next up, we can wire the community and cloud save buttons.</p>
-              <ul style={{marginTop:0}}>
-                <li>Post in the community</li>
-                <li>Save assessment & goals to the cloud</li>
-              </ul>
-            </div>
-          </section>
+        {!session ? (
+          <>
+            <section>
+              <div style={{background:'#fff', border:'1px solid #e5e7eb', borderRadius:16, padding:16}}>
+                <h2 style={{marginTop:0, color:'#2563eb'}}>Welcome</h2>
+                <p>Sign in below to unlock community posting and cloud saves. We use passwordless email magic links.</p>
+                {!isSupabaseConfigured && (
+                  <p style={{color:'#b91c1c', fontWeight:600}}>Environment variables missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel.</p>
+                )}
+              </div>
+            </section>
+            <section>
+              <AuthPanel onSession={setSession} />
+            </section>
+          </>
+        ) : (
+          <>
+            <section>
+              <div style={{background:'#fff', border:'1px solid #e5e7eb', borderRadius:16, padding:16}}>
+                <h2 style={{marginTop:0, color:'#2563eb'}}>Community</h2>
+                <p style={{margin:0, color:'#64748b'}}>Share wins, ask questions, and encourage others.</p>
+              </div>
+            </section>
+            <section>
+              <CommunityFeed session={session} />
+            </section>
+          </>
         )}
       </main>
 
@@ -51,5 +54,5 @@ export default function App() {
         © {new Date().getFullYear()} 50plus Health & Wellness. For education only.
       </footer>
     </div>
-  )
+  );
 }
