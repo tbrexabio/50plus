@@ -23,15 +23,19 @@ export default function CommunityFeed({ session }) {
   async function createPost(e) {
     e.preventDefault();
     if (!content.trim()) return;
+    if (!session?.user?.id) {
+      setError('You must be signed in to post.');
+      return;
+    }
     setLoading(true);
     setError('');
     const { error } = await supabase.from('posts').insert({
-      content: content.trim()
+      user_id: session.user.id,   // REQUIRED for RLS
+      content: content.trim(),
     });
     setLoading(false);
-    if (error) {
-      setError(error.message);
-    } else {
+    if (error) setError(error.message);
+    else {
       setContent('');
       await loadPosts();
     }
@@ -39,44 +43,48 @@ export default function CommunityFeed({ session }) {
 
   if (!isSupabaseConfigured) {
     return (
-      <div className="rounded-2xl border p-4 bg-white">
-        <p className="text-sm text-gray-700">Community will activate after Supabase is configured. See README for setup.</p>
+      <div style={box}>
+        <p style={{fontSize:14,color:'#475569'}}>Community will activate after Supabase is configured.</p>
       </div>
     );
   }
 
   return (
-    <div className="grid gap-4">
-      {session ? (
-        <form onSubmit={createPost} className="rounded-2xl border p-4 bg-white grid gap-2">
-          <label className="text-xs font-medium text-gray-700">Share an update</label>
-          <textarea
-            rows={3}
-            value={content}
-            onChange={e => setContent(e.target.value)}
-            className="border rounded-xl px-3 py-2"
-            placeholder="What habit moved the needle for you this week?"
-          />
-          <div className="flex gap-2">
-            <button type="submit" disabled={loading} className="rounded-2xl px-4 py-2 text-sm font-semibold shadow-sm bg-black text-white hover:opacity-90">
-              {loading ? 'Posting…' : 'Post'}
-            </button>
-            {error && <p className="text-sm text-red-600">{error}</p>}
-          </div>
-        </form>
-      ) : (
-        <div className="rounded-2xl border p-4 bg-white text-sm text-gray-700">Sign in to post.</div>
-      )}
+    <div style={{display:'grid', gap:12}}>
+      <form onSubmit={createPost} style={box}>
+        <label style={label}>Share an update</label>
+        <textarea
+          rows={3}
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="What habit moved the needle for you this week?"
+          style={input}
+        />
+        <div style={{display:'flex', gap:8, alignItems:'center'}}>
+          <button type="submit" disabled={loading} style={primary}>
+            {loading ? 'Posting…' : 'Post'}
+          </button>
+          {error && <span style={badgeError}>{error}</span>}
+        </div>
+      </form>
 
-      <div className="grid gap-3">
-        {posts.map(p => (
-          <div key={p.id} className="rounded-2xl border p-4 bg-white">
-            <p className="text-sm whitespace-pre-wrap">{p.content}</p>
-            <p className="text-xs text-gray-500 mt-2">{new Date(p.created_at).toLocaleString()}</p>
+      <div className="posts" style={{display:'grid', gap:12}}>
+        {posts.map((p) => (
+          <div key={p.id} style={box}>
+            <p style={{whiteSpace:'pre-wrap', fontSize:14}}>{p.content}</p>
+            <p style={{marginTop:8, fontSize:12, color:'#64748b'}}>
+              {new Date(p.created_at).toLocaleString()}
+            </p>
           </div>
         ))}
-        {!posts.length && <div className="text-sm text-gray-600">No posts yet.</div>}
+        {!posts.length && <div style={{fontSize:14,color:'#475569'}}>Be the first to start the conversation.</div>}
       </div>
     </div>
   );
 }
+
+const box = { background:'#fff', border:'1px solid #e5e7eb', borderRadius:12, padding:16, boxShadow:'0 1px 2px rgba(0,0,0,0.04)' };
+const input = { border:'1px solid #e5e7eb', borderRadius:12, padding:'10px 12px', fontSize:14, width:'100%' };
+const label = { fontSize:12, fontWeight:600, color:'#334155', marginBottom:4 };
+const primary = { background:'#2563eb', color:'#fff', border:'none', borderRadius:12, padding:'8px 14px', fontWeight:600, cursor:'pointer' };
+const badgeError = { background:'#fff7ed', color:'#b45309', borderRadius:999, padding:'2px 8px', fontSize:12, fontWeight:700 };
